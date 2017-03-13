@@ -236,13 +236,18 @@ def match_with_gaps(my_word, other_word):
     my_word_temp = my_word.replace(' ', '')
     if len(my_word_temp) != len(other_word):
       return False
+    '''
+    4 senarios: my_word_temp[i] == other_word[i] :: bingo
+                my_word_temp[i] != other_word[i] and my_word_temp[i] != '_' :: False  
+                my_word_temp[i] == '_' and other_word[i] in my_word_temp :: False
+                my_word_temp[i] == '_' and other_word[i] not in my_word_temp :: bingo
+    '''
     for i in range(len(my_word_temp)):
       if my_word_temp[i] != other_word[i] and my_word_temp[i] != '_':
         return False
-      elif my_word_temp[i] == '_' and other_word[i] in my_word_temp:
+      if my_word_temp[i] == '_' and other_word[i] in my_word_temp:
         return False
-      elif i == len(my_word_temp) - 1:
-        return True
+    return True
       
 
 def show_possible_matches(my_word):
@@ -265,7 +270,7 @@ def show_possible_matches(my_word):
       print(' '.join(printlist))
 
 
-def printinfo(num_of_warnings,old_guessed_word,message):
+def print_info(num_of_warnings,old_guessed_word,message):
     '''
     message is a string that tells if failure because of invalid letter or repeated letter
     '''
@@ -322,17 +327,17 @@ def hangman_with_hints(secret_word):
       elif not str.isalpha(new_letter_guessed) :
         if num_of_warnings != 0:
           num_of_warnings = num_of_warnings - 1
-          printinfo(num_of_warnings,old_guessed_word,'That is not a valid letter.')
+          print_info(num_of_warnings,old_guessed_word,'That is not a valid letter.')
         else:
           num_of_guesses = num_of_guesses - 1
-          printinfo(num_of_warnings,old_guessed_word,'That is not a valid letter.')
+          print_info(num_of_warnings,old_guessed_word,'That is not a valid letter.')
       elif new_letter_guessed in letters_guessed:
         if num_of_warnings != 0:
           num_of_warnings = num_of_warnings - 1
-          printinfo(num_of_warnings,old_guessed_word,'You ve already guessed that letter.')
+          print_info(num_of_warnings,old_guessed_word,'You ve already guessed that letter.')
         else:
           num_of_guesses = num_of_guesses - 1
-          printinfo(num_of_warnings,old_guessed_word,'You ve already guessed that letter.')
+          print_info(num_of_warnings,old_guessed_word,'You ve already guessed that letter.')
       else:
         letters_guessed.append(str.lower(new_letter_guessed))
         new_guessed_word = get_guessed_word(secret_word, letters_guessed)
