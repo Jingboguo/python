@@ -16,7 +16,7 @@ CONSONANTS = 'bcdfghjklmnpqrstvwxyz'
 HAND_SIZE = 7
 
 SCRABBLE_LETTER_VALUES = {
-    'a': 1, 'b': 3, 'c': 3, 'd': 2, 'e': 1, 'f': 4, 'g': 2, 'h': 4, 'i': 1, 'j': 8, 'k': 5, 'l': 1, 'm': 3, 'n': 1, 'o': 1, 'p': 3, 'q': 10, 'r': 1, 's': 1, 't': 1, 'u': 1, 'v': 4, 'w': 4, 'x': 8, 'y': 4, 'z': 10
+    '*': 0,'a': 1, 'b': 3, 'c': 3, 'd': 2, 'e': 1, 'f': 4, 'g': 2, 'h': 4, 'i': 1, 'j': 8, 'k': 5, 'l': 1, 'm': 3, 'n': 1, 'o': 1, 'p': 3, 'q': 10, 'r': 1, 's': 1, 't': 1, 'u': 1, 'v': 4, 'w': 4, 'x': 8, 'y': 4, 'z': 10
 }
 
 # -----------------------------------
@@ -91,8 +91,21 @@ def get_word_score(word, n):
     n: int >= 0
     returns: int >= 0
     """
+    result = 0
+    first_comp = 0
+    word = str.lower(word)
+    if len(word) == 0:
+      return result
+    else:
+      for letter in word:
+        first_comp = first_comp + SCRABBLE_LETTER_VALUES[letter]
+      if len(word) * 7 - (n - len(word)) * 3 > 1:
+        second_comp = len(word) * 7 - (n - len(word)) * 3
+      else:
+        second_comp = 1
+      result = first_comp * second_comp
+      return result
     
-    pass  # TO DO... Remove this line when you implement this function
 
 #
 # Make sure you understand how this function works and what it does!
@@ -134,7 +147,7 @@ def deal_hand(n):
     """
     
     hand={}
-    num_vowels = int(math.ceil(n / 3))
+    num_vowels = int(math.ceil(n / 3)) - 1
 
     for i in range(num_vowels):
         x = random.choice(VOWELS)
@@ -143,6 +156,8 @@ def deal_hand(n):
     for i in range(num_vowels, n):    
         x = random.choice(CONSONANTS)
         hand[x] = hand.get(x, 0) + 1
+            
+    hand['*'] = 1
     
     return hand
 
@@ -167,8 +182,14 @@ def update_hand(hand, word):
     hand: dictionary (string -> int)    
     returns: dictionary (string -> int)
     """
+    hand_copy = hand.copy()
+    word = str.lower(word)
+    for letter in word:
+      if hand_copy.get(letter,0) > 0:
+        hand_copy[letter] -= 1
+    return hand_copy
 
-    pass  # TO DO... Remove this line when you implement this function
+    
 
 #
 # Problem #3: Test word validity
@@ -184,8 +205,32 @@ def is_valid_word(word, hand, word_list):
     word_list: list of lowercase strings
     returns: boolean
     """
+    hand_copy = hand.copy()
+    word = str.lower(word) 
 
-    pass  # TO DO... Remove this line when you implement this function
+    # hel*o
+    for i in range(len(word)):
+      if hand_copy.get(word[i],0) == 0:
+        return False
+      else:
+        hand_copy[word[i]] -= 1
+        
+    if word in word_list:
+      return True    
+    else:         
+      # find index
+      # for loop, so just 5 cases
+      # 
+      index_of_star = word.index('*')
+      for vowel in VOWELS:
+        word_copy = list(word)
+        word_copy[index_of_star] = vowel
+        possible_word = ''.join(word_copy)
+        if (possible_word in word_list):
+            return True
+      return False
+      
+    
 
 #
 # Problem #5: Playing a hand
@@ -197,8 +242,11 @@ def calculate_handlen(hand):
     hand: dictionary (string-> int)
     returns: integer
     """
+    result = 0
+    for letter in hand:
+      result = result + hand[letter]
+    return result
     
-    pass  # TO DO... Remove this line when you implement this function
 
 def play_hand(hand, word_list):
 
@@ -262,7 +310,25 @@ def play_hand(hand, word_list):
     # so tell user the total score
 
     # Return the total score as result of function
-
+    score = 0
+    hand = deal_hand(HAND_SIZE)
+    while calculate_handlen(hand) > 0:
+      print('Current Hand:', display_hand(hand))
+      word = input(print('Enter word, or "!!" to indicate that you are finished: '))
+      if word == '!!':
+        print('Total score:',score)
+        break
+      elif is_valid_word(word, hand, word_list):
+        score = score + get_word_score(word, HAND_SIZE)
+        print(word, 'earned ', get_word_score(word, HAND_SIZE), 'points.', 'Total: ', score, 'points')
+      else:
+        print('That is not a valid word. Please choose another word.')
+      hand = update_hand(hand, word)
+    if calculate_handlen(hand) == 0:
+      print('Ran out of letters. Total score:', score, 'points')
+        
+        
+        
 
 
 #
@@ -296,8 +362,23 @@ def substitute_hand(hand, letter):
     letter: string
     returns: dictionary (string -> int)
     """
+    hand_copy = hand.copy()
+    letter = str.lower(letter)
+    all_letter_list = list(string.ascii_lowercase)
+    for char1 in all_letter_list:
+      for char2 in hand.keys():
+        if char1 == char2:
+          all_letter_list.remove(char1)
+    if letter in hand_copy:
+      freq = hand_copy[letter]
+      del hand_copy[letter]
+      hand_copy[random.choice(all_letter_list)] = freq
+      return hand_copy
+    else:
+      return hand
+
     
-    pass  # TO DO... Remove this line when you implement this function
+    
        
     
 def play_game(word_list):
