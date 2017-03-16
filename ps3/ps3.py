@@ -217,17 +217,18 @@ def is_valid_word(word, hand, word_list):
         
     if word in word_list:
       return True    
-    else:         
+    else:  
+      # need to consider no * case       
       # find index
       # for loop, so just 5 cases
-      # 
-      index_of_star = word.index('*')
-      for vowel in VOWELS:
-        word_copy = list(word)
-        word_copy[index_of_star] = vowel
-        possible_word = ''.join(word_copy)
-        if (possible_word in word_list):
-            return True
+      if '*' in word:
+        index_of_star = word.index('*')
+        for vowel in VOWELS:
+          word_copy = list(word)
+          word_copy[index_of_star] = vowel
+          possible_word = ''.join(word_copy)
+          if (possible_word in word_list):
+              return True
       return False
       
     
@@ -413,38 +414,37 @@ def play_game(word_list):
 
     word_list: list of lowercase strings
     """
+    
+    substitution = True
+    replay = True
+    score = 0
     number_of_hands = int(input('Enter total number of hands:'))
-    number_of_substitution = 0
-    number_of_replay = 0
-    # could use total_score as integer
-    score = [0] * number_of_hands
-    replay_score = 0
-    # use while
     while type(number_of_hands) != int:
       number_of_hands = int(input('Enter total number of hands:'))
-      
-    # chagne hands to nth_hand
-    for hands in range(number_of_hands):
+    while number_of_hands > 0:
+      number_of_hands -= 1
       hand = deal_hand(HAND_SIZE)
       hand_copy = hand.copy()
       print('Current Hand:')
       display_hand(hand_copy)
       # boolean is better than hand
-      if number_of_substitution == 0:
-        substitution_boolean = input('Would you like to substitute a letter?')
-        if substitution_boolean == 'yes':
-          number_of_substitution += 1 # 
+      if substitution :
+        substitution_boolean_input = input('Would you like to substitute a letter?')
+        if substitution_boolean_input == 'yes':
+          substitution = False
           sub_letter = input('Which letter would you like to replace:')
           hand_copy = substitute_hand(hand_copy, sub_letter)
-      score[hands] = play_hand(hand_copy, word_list)
-      if number_of_replay == 0:
+      current_score = play_hand(hand_copy, word_list)
+      if replay:
         replay_boolean = input('Would you like to replay the hand?')
         if replay_boolean == 'yes':
-          number_of_replay += 1
+          replay = False
           hand_copy = hand.copy()
           replay_score = play_hand(hand_copy, word_list)
-          score[hands] = max(score[hands],replay_score)
-    print('Total score over all hands:', sum(score))
+          score = score + max(current_score,replay_score)
+        else:
+          score = score + current_score
+    print('Total score over all hands:', score)
           
         
       
